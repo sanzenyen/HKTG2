@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ハングルキーボードタイプゲーム２</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 100px; /* input-areaの高さ分余白を追加 */
+        }
+
+        h1 {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        #kanada-table {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        .cell, .header-cell {
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            user-select: none;
+        }
+        
+        .cell:hover {
+            background-color: #d0d7de;
+            transform: translateY(-2px);
+        }
+        
+        .cell.filled {
+            background-color: #2ecc71;
+            color: #fff;
+            cursor: default;
+        }
+
+        .header-cell {
+            background-color: #3498db;
+            color: #fff;
+            cursor: default;
+            font-weight: bold;
+        }
+
+        #input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-top: 1px solid #ccc;
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #input-area input {
+            font-size: 1rem;
+            padding: 10px 15px;
+            width: 80%;
+            max-width: 400px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        #input-area input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        #submit-btn {
+            margin-top: 15px;
+            font-size: 1rem;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        #submit-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        #timer {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #27ae60;
+        }
+
+        #clear-records {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            order: 1; 
+        }
+
+        #clear-records h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        #records-list {
+            list-style-type: none;
+            width: 100%;
+        }
+
+        #records-list li {
+            background-color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #34495e;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .cell, .header-cell {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            #input-area input {
+                width: 100%;
+                max-width: none;
+            }
+
+            #submit-btn {
+                width: 100%;
+            }
+
+            #clear-records h2 {
+                font-size: 1.2rem;
+            }
+
+            #records-list li {
+                font-size: 0.9rem;
+            }
+
+            #kanada-table {
+                width: 400px;
+                height: 600px;
+                overflow: auto;
+            }
+
+            .cell, .header-cell {
+                font-size: 0.5rem; 
+                padding: 5px; 
+            }
+
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            body {
+                padding-bottom: 120px; /* input-areaの高さに応じて余白を調整 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>ハングルキーボードタイプゲーム２</h1>
+
+    <div id="kanada-table"></div>
+
+    <div id="input-area">
+        <input type="text" id="user-input" placeholder="文字を入力してください">
+        <button id="submit-btn">送信</button>
+        <div id="timer">タイマー: 0秒</div>
+        <div id="message"></div>
+    </div>
+    
+    <div id="clear-records">
+        <h2>クリア記録</h2>
+        <ul id="records-list">
+        </ul>
+    </div>
+    
+    <script>
+        const hangulTable = [
+            ['が', 'ぎゃ', 'ぎぇ', 'ぎょ', 'ご', 'ぎょう', 'ぐ', 'ぎゅ', 'ぎぃ', 'ぎ'],
+            ['な', 'にゃ', 'にぇ', 'にょ', 'の', 'にょう', 'ぬ', 'にゅ', 'にぃ', 'に'],
+            ['だ', 'ぢゃ', 'ぢぇ', 'ぢょ', 'ど', 'ぢょう', 'づ', 'ぢゅ', 'ぢぃ', 'ぢ'],
+            ['ら', 'りゃ', 'りぇ', 'りょ', 'ろ', 'りょう', 'る', 'りゅ', 'りぃ', 'り'],
+            ['ま', 'みゃ', 'みぇ', 'みょ', 'も', 'みょう', 'む', 'みゅ', 'みぃ', 'み'],
+            ['ば', 'びゃ', 'びぇ', 'びょ', 'ぼ', 'びょう', 'ぶ', 'びゅ', 'びぃ', 'び'],
+            ['さ', 'しゃ', 'しぇ', 'しょ', 'そ', 'しょう', 'す', 'しゅ', 'しぃ', 'し'],
+            ['あ', 'や', 'ゑ', 'よ', 'お', 'よう', 'う', 'ゅ', 'ぃ', 'い'],
+            ['ざ', 'じゃ', 'じぇ', 'じょ', 'ぞ', 'じょう', 'ず', 'じゅ', 'じぃ', 'じ'],
+            ['ちゃ', 'ちぇ', 'ちょ', 'ちょう', 'ちゅ', 'ちぃ', 'っ', 'つ', 'て', 'ち'],
+            ['か', 'きゃ', 'きぇ', 'きょ', 'こ', 'きょう', 'く', 'きゅ', 'きぃ', 'き'],
+            ['た', 'ちゃ', 'ちぇ', 'ちょ', 'と', 'ちょう', 'つ', 'ちゅ', 'ちぃ', 'ち'],
+            ['ぱ', 'ぴゃ', 'ぴぇ', 'ぴょ', 'ぽ', 'ぴょう', 'ぷ', 'ぴゅ', 'ぴぃ', 'ぴ'],
+            ['は', 'ひゃ', 'ひぇ', 'ひょ', 'ほ', 'ひょう', 'ふ', 'ひゅ', 'ひぃ', 'ひ']
+        ];
+
+        const consonants = ['g/k', 'n', 'd/t', 'r/l', 'm', 'b/p', 's', '無', 'j/ch', 'ch', 'k', 't', 'p', 'h'];
+        const vowels = ['a', 'ya', 'eo', 'yeo', 'o', 'yo', 'u', 'yu', 'eu', 'i'];
+
+        let totalCells = 0;
+        let filledCells = 0;
+        let timerInterval = null;
+        let startTime = null;
+
+        window.onload = function() {
+            const tableDiv = document.getElementById('kanada-table');
+
+            tableDiv.appendChild(createHeaderCell(''));
+            vowels.forEach(vowel => {
+                tableDiv.appendChild(createHeaderCell(vowel));
+            });
+
+            hangulTable.forEach((row, rowIndex) => {
+                tableDiv.appendChild(createHeaderCell(consonants[rowIndex]));
+                row.forEach((char, colIndex) => {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.textContent = char;
+                    cell.dataset.char = char;
+                    tableDiv.appendChild(cell);
+                    totalCells++;
+                });
+            });
+
+            document.getElementById('submit-btn').addEventListener('click', handleInputSubmit);
+            loadClearRecords();
+        };
+
+        function createHeaderCell(text) {
+            const cell = document.createElement('div');
+            cell.classList.add('header-cell');
+            cell.textContent = text;
+            return cell;
+        }
+        
+        function handleInputSubmit() {
+            const userInput = document.getElementById('user-input').value.trim();
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = '';
+
+            if (userInput === '') {
+                messageDiv.textContent = '文字を入力してください。';
+                return;
+            }
+
+            let found = false;
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                if (cell.dataset.char === userInput && !cell.classList.contains('filled')) {
+                    cell.classList.add('filled');
+                    found = true;
+                    filledCells++;
+
+                    if (filledCells === 1 && !startTime) {
+                        startTimer();
+                    }
+
+                    const utterance = new SpeechSynthesisUtterance(cell.dataset.char);
+                    utterance.lang = 'ko-KR';
+                    window.speechSynthesis.speak(utterance);
+                }
+            });
+
+            if (found) {
+                document.getElementById('user-input').value = '';
+                checkGameClear();
+            } else {
+                messageDiv.textContent = '正しい文字を入力してください、または既に埋められています。';
+                document.getElementById('user-input').value = ''; // 追加: 誤った文字が入力された場合にインプットエリアをクリア
+            }
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const now = Date.now();
+            const elapsed = Math.floor((now - startTime) / 1000);
+            document.getElementById('timer').textContent = `タイマー: ${elapsed}秒`;
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function checkGameClear() {
+            if (filledCells === totalCells) {
+                stopTimer();
+                const now = Date.now();
+                const elapsed = Math.floor((now - startTime) / 1000);
+                document.getElementById('message').textContent = `おめでとうございます！ゲームクリアです。時間: ${elapsed}秒`;
+                saveClearRecord(elapsed);
+                loadClearRecords();
+                resetGame();
+            }
+        }
+
+        function saveClearRecord(time) {
+            let records = JSON.parse(localStorage.getItem('clearRecords')) || [];
+            const timestamp = new Date().toLocaleString();
+            records.push({ time, timestamp });
+            localStorage.setItem('clearRecords', JSON.stringify(records));
+        }
+
+        function loadClearRecords() {
+            const recordsList = document.getElementById('records-list');
+            recordsList.innerHTML = '';
+            let records = JSON.parse(localStorage.getItem('clearRecords')) || [];
+            records.forEach(record => {
+                const li = document.createElement('li');
+                li.textContent = `${record.timestamp}: ${record.time}秒`;
+                recordsList.appendChild(li);
+            });
+        }
+
+        function resetGame() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.classList.remove('filled');
+            });
+            filledCells = 0;
+            startTime = null;
+            document.getElementById('timer').textContent = 'タイマー: 0秒';
+        }
+        
+        document.getElementById('user-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                handleInputSubmit();
+            }
+        });
+    </script>
+</body>
+</html>
